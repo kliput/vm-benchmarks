@@ -9,8 +9,8 @@ import subprocess
 
 def t_calloc_many():
 	print 'test alokacji pamieci'
-	block = 1
-	count = 300*1024*100
+	block = 1024*1024*256 # 256MB
+	count = 1000000
 	return subprocess.call(['./test_mem', 'calloc_many', str(block), str(count)])
 	
 def main():

@@ -1,5 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
+#include <limits.h>
 
 #include "test_lib.h"
 
@@ -8,15 +10,18 @@
  *  - calloc: <czas_alokacji> <czas_zwalniania>
  */
 
-void test_calloc_many(int block_size, int count, void* array[]) {
-	int i;
+void test_calloc_many(size_t block_size, unsigned long count) {
+	unsigned long i;
+	void* mem;
 	
 	for (i=0; i<count; ++i) {
-		array[i] = calloc(sizeof(char), (size_t)block_size);
+		mem = calloc(sizeof(char), block_size);
+		free(mem);
 	}
 	
 }
 
+/*
 void test_free_many(int count, void* array[]) {
 	int i;
 	
@@ -24,6 +29,7 @@ void test_free_many(int count, void* array[]) {
 		free(array[i]);
 	}
 }
+*/
 
 void print_usage() {
 	puts("Uzycie: ./test_mem <test> [argumenty]\ttesty:\n"
@@ -39,24 +45,35 @@ int main(int argc, char* argv[]) {
 	
 	if (!strcmp(argv[1], "calloc_many")) {
 		double c_time;
-		double f_time;
+		//double f_time;
 		
 		if (argc < 3) {
-			puts("malo arg");
+			puts("zbyt malo argumentow");
 			print_usage();
 		}
 		
-		int block_size = atoi(argv[2]);
-		int count = atoi(argv[3]);
+		unsigned long block_size = strtoul(argv[2], NULL, 0);
+		unsigned long count = strtoul(argv[3], NULL, 0);
+		
+		if (block_size>SIZE_MAX || block_size<0) {
+			puts("nieprawidlowy rozmiar blokow");
+			print_usage();
+		}
+		
+		if (count>ULONG_MAX || count<0) {
+			puts("nieprawidlowa liczba blokow");
+			print_usage();
+		}
 		
 		void** array = malloc(sizeof(void*)*count);
 		
-		EXEC_TIME(test_calloc_many(block_size, count, array), c_time);
-		EXEC_TIME(test_free_many(count, array), f_time);
+		EXEC_TIME(test_calloc_many(block_size, count), c_time);
+		//EXEC_TIME(test_free_many(count, array), f_time);
 		
 		free(array);
 		
-		printf("%lf %lf\n", c_time, f_time);
+// 		printf("%lf %lf\n", c_time, f_time);
+		printf("%lf\n", c_time);
 		
 	} else {
 		puts("nie ma takiego testu");
