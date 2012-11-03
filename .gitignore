@@ -1,3 +1,5 @@
 *.o
 test_mem
+input.flv
+
 
