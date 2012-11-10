@@ -75,7 +75,7 @@ class Tests(object):
 		
 		if not os.path.isfile(input_file):
 			
-			print 'brak wejściowego pliku wideo %s, próba pobrania...', (input_file)
+			print 'brak wejściowego pliku wideo %s, próba pobrania...' % (input_file)
 			subprocess.check_call(['wget', url], stdout=self.null, stderr=self.null)
 			
 			#raise Exception('brak wejściowego pliku wideo: %s', (input_file))
@@ -123,6 +123,12 @@ class Tests(object):
 	
 	def t_glmark(self):
 		print 'test grafiki glmark2'
+		
+		try:
+			subprocess.check_call(['which', 'glmark2'], stdout=self.null, stderr=self.null)
+		except subprocess.CalledProcessError:
+			print 'brak programu glmark2, próba instalacji za pomocą apt-get...'
+			subprocess.check_call(['sudo', 'apt-get', '-qq', '-y', 'install', 'glmark2'])
 		
 		out = subprocess.check_output(['glmark2', '-b', 'build:use_vbo=true'], stderr=subprocess.STDOUT)
 		
