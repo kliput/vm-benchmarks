@@ -23,10 +23,11 @@ class Tests(object):
 			'video':	self.t_video,
 			'gcc':		self.t_gcc,
 			'glmark':	self.t_glmark,
+			'threads':	self.t_threads,
 		}
-	
+		
 	def t_calloc(self):
-		print 'test alokacji pamieci'
+		print 'test alokacji pamięci'
 		results = []
 		
 		block = 1024*1024*256 # 256MB
@@ -117,20 +118,28 @@ class Tests(object):
 	def t_glmark(self):
 		print 'test grafiki glmark2'
 		
-		out = subprocess.check_output(['glmark2', '-b', 'build:use_vbo=true'],  stderr=subprocess.STDOUT)
+		out = subprocess.check_output(['glmark2', '-b', 'build:use_vbo=true'], stderr=subprocess.STDOUT)
 		
 		print re.search(r'FPS: (\d+)', out).group(1)
 
+	def t_threads(self):
+		print 'test wielowątkowości'
+		
+		threads_num = 8;
+		
+		start = time.time()
+		subprocess.check_call(['./test_threads', str(threads_num)], stdout=self.null, stderr=self.null)
+		end = time.time()
+		
+		print '%.2f' % (end-start)
+		
 	
 	def main(self, targets):
 		try:
-			subprocess.check_call(['make', 'all'])
+			subprocess.check_call(['make', 'all'], stdout=self.null, stderr=self.null)
 		except OSError as e:
 			print 'problem z budowaniem: %s' % (str(e))
 			return 1
-		
-		#targets = [self.t_calloc, self.t_copy, self.t_video, self.t_gcc, self.t_glmark]
-		#targets = [self.t_glmark]
 		
 		if len(targets) == 0:
 			targets = self.tests.keys()
@@ -154,8 +163,6 @@ class Tests(object):
 
 if __name__ == '__main__':
 	tests = Tests()
-	
-	print sys.argv
 	
 	if len(sys.argv) > 1:
 		parser = argparse.ArgumentParser(description='Programy do przeprowadzania badań wydajności.')
