@@ -68,11 +68,17 @@ class Tests(object):
 	def t_video(self):
 		print 'test konwersji wideo'
 		
+		url = 'http://student.agh.edu.pl/~jliput/ps/projekt/pliki/input.flv'
 		input_file = 'input.flv'
 		output_file = 'output.mpg'
 		
+		
 		if not os.path.isfile(input_file):
-			raise Exception('brak wejściowego pliku wideo: %s', (input_file))
+			
+			print 'brak wejściowego pliku wideo %s, próba pobrania...', (input_file)
+			subprocess.check_call(['wget', url], stdout=self.null, stderr=self.null)
+			
+			#raise Exception('brak wejściowego pliku wideo: %s', (input_file))
 		
 		start = time.time()
 		subprocess.check_call(['ffmpeg', '-y', '-i', input_file, output_file], stdout=self.null, stderr=self.null)
