@@ -161,12 +161,12 @@ class Tests(object):
 		if len(targets) == 0:
 			targets = self.tests.keys()
 		
-		try:
-			for t in targets:
-				try:
-					self.tests[t]()
-				except (KeyError) as e:
-					print 'brak testu: %s' % (t)
+		
+		for t in targets:
+			try:
+				self.tests[t]()
+			except (KeyError) as e:
+				print 'brak testu: %s' % (t)
 			except (Exception) as e:
 				print 'problem z testem %s: %s' % (str(t), str(e))
 				#return 2
