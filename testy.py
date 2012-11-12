@@ -72,6 +72,11 @@ class Tests(object):
 		input_file = 'input.flv'
 		output_file = 'output.mpg'
 		
+		try:
+			subprocess.check_call(['which', 'ffmpeg'], stdout=self.null, stderr=self.null)
+		except subprocess.CalledProcessError:
+			print 'brak programu ffmpeg, próba instalacji za pomocą apt-get...'
+			subprocess.check_call(['sudo', 'apt-get', '-qq', '-y', 'install', 'ffmpeg'])
 		
 		if not os.path.isfile(input_file):
 			
