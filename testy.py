@@ -167,9 +167,9 @@ class Tests(object):
 					self.tests[t]()
 				except (KeyError) as e:
 					print 'brak testu: %s' % (t)
-		except (Exception) as e:
-			print 'problem z testem %s: %s' % (str(t), str(e))
-			return 2
+			except (Exception) as e:
+				print 'problem z testem %s: %s' % (str(t), str(e))
+				#return 2
 		
 	
 	def cleanup(self):
