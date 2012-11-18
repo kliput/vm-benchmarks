@@ -2,5 +2,6 @@
 test_mem
 input.flv
 rxvt-2.7.10.tar.gz
-
+rxvf-2.7.10/
 test_threads
+output.mpg
