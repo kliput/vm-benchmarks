@@ -15,6 +15,7 @@ import argparse
 
 
 class Tests(object):
+	
 	iperf_server = 'localhost'
 	
 	def __init__(self):
@@ -30,11 +31,6 @@ class Tests(object):
 			'iperf':		self.t_iperf,
 			'jumboframes':  self.t_jumboframes 
 		}
-
-		'''narazie localhost ale z przyczyn co Ci mowilem kiedys
-		trzeba ustawic NATa z sys hostem i na natowskim ip sie laczyc
-		z iperf -s
-		'''
 		
 	def apt_check_install(self, pkg_name):
 		try:
@@ -45,74 +41,24 @@ class Tests(object):
 
 	def iperf_mbytes_parse(self, output):
 		return re.search(r'((\d+\.)?(\d+)) MBytes\/sec', output).group(1)
-		
-	def start_iperf_tcp(self):
-		self.apt_check_install('iperf')
-		self.serv1 = subprocess.Popen(['iperf','-s','-p10000'], stdout=self.null, stderr=self.null)
-	
-	def stop_iperf_tcp(self):
-		self.serv1.kill()
-		
-	def start_iperf_udp(self):
-		self.apt_check_install('iperf')
-		self.serv2 = subprocess.Popen(['iperf','-s','-u','-p10001'], stdout=self.null, stderr=self.null)
-	
-	def stop_iperf_udp(self):
-		self.serv2.kill()
 	
 	def t_iperf(self):
 		print 'test wydajności tcp (MB/s)'
-		self.start_iperf_tcp()
-		try:
-			out = subprocess.check_output(['iperf','-fM','-p10000','-c',self.iperf_server], stderr=subprocess.STDOUT)
-		except Exception:
-			self.stop_iperf_tcp()
-			raise
-		finally:
-			self.stop_iperf_tcp()
-				
-		print self.iperf_mbytes_parse(out)
-			
-		print 'test wydajności udp (MB/s)' 
-		self.start_iperf_udp()
-		try:
-			out = subprocess.check_output(['iperf','-u','-p10001','-fM','-c',self.iperf_server], stderr=subprocess.STDOUT)
-		except Exception:
-			self.stop_iperf_udp()
-			raise
-		finally:
-			self.stop_iperf_udp()
+		
+		out = subprocess.check_output(['iperf','-fM','-p10000','-c',self.iperf_server], stderr=subprocess.STDOUT)
 		
 		print self.iperf_mbytes_parse(out)
 		
 	def t_jumboframes(self):
-		print 'test duzych pakietow tcp (MB/s)'
-		self.start_iperf_tcp()
-		try:
-			out = subprocess.check_output(['iperf','-M9000','-p10000','-fM','-c',self.iperf_server], stderr=subprocess.STDOUT)
-		except Exception:
-			self.stop_iperf_tcp()
-			raise
-		finally:
-			self.stop_iperf_tcp()
+		print 'test dużych pakietów tcp (MB/s)'
+		
+		out = subprocess.check_output(['iperf','-M9000','-p10000','-fM','-c',self.iperf_server], stderr=subprocess.STDOUT)
 		
 		print self.iperf_mbytes_parse(out)
-		
-		
-		print 'test duzych pakietow udp (MB/s)'
-		self.start_iperf_udp()
-		try:
-			out = subprocess.check_output(['iperf','-M9000','-p10001','-u','-fM','-c',self.iperf_server], stderr=subprocess.STDOUT)
-		except Exception:
-			self.stop_iperf_udp()
-			raise
-		finally:
-			self.stop_iperf_udp()
-	
-		print self.iperf_mbytes_parse(out)
+
 	
 	def t_calloc(self):
-		print 'test alokacji pamięci'
+		print 'test alokacji pamięci (s)'
 		results = []
 		
 		block = 1024*1024*256 # 256MB
@@ -129,7 +75,7 @@ class Tests(object):
 		print '%.2f' % (reduce(lambda x, y: x + y, results) / len(results))
 
 	def t_copy(self):
-		print 'test kopiowania pliku'
+		print 'test kopiowania pliku (s)'
 		
 		block_size = 1000*1000
 		block_count = 512
@@ -151,7 +97,7 @@ class Tests(object):
 		print '%.2f' % (end-start)
 
 	def t_video(self):
-		print 'test konwersji wideo'
+		print 'test konwersji wideo (s)'
 		
 		url = 'http://student.agh.edu.pl/~jliput/ps/projekt/pliki/input.flv'
 		input_file = 'input.flv'
@@ -174,7 +120,7 @@ class Tests(object):
 		print '%.2f' % (end-start)
 
 	def t_gcc(self):
-		print 'test niewielkiej kompilacji w GCC'
+		print 'test niewielkiej kompilacji w GCC (s)'
 		
 		name = 'rxvt-2.7.10'
 		archive = '%s.tar.gz' % (name)
@@ -212,7 +158,7 @@ class Tests(object):
 		print '%.2f' % (end-start)
 	
 	def t_glmark(self):
-		print 'test grafiki glmark2'
+		print 'test grafiki glmark2 (FPS)'
 		
 		self.apt_check_install('glmark2')
 		
@@ -221,7 +167,7 @@ class Tests(object):
 		print re.search(r'FPS: (\d+)', out).group(1)
 
 	def t_threads(self):
-		print 'test wielowątkowości'
+		print 'test wielowątkowości (s)'
 		
 		threads_num = 8;
 		
