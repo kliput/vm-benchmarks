@@ -29,7 +29,7 @@ class Tests(object):
 			'glmark':		self.t_glmark,
 			'threads':		self.t_threads,
 			'iperf':		self.t_iperf,
-			'jumboframes':  self.t_jumboframes,
+			#'jumboframes':  self.t_jumboframes,
 			'grep':			self.t_grep,
 			'dd_small':		self.t_dd_small,
 			'dd_large':		self.t_dd_large,
@@ -52,7 +52,7 @@ class Tests(object):
 			),
 			'g_net': (
 				self.t_iperf,
-				self.t_jumboframes,
+			#	self.t_jumboframes,
 			),
 		}
 		
@@ -270,13 +270,14 @@ class Tests(object):
 		if len(targets) == 0:
 			targets = self.tests.keys()
 		
+		for t in targets:
+			if t.startswith('g_') or type(t)==tuple:
+				targets.extend(t)
+				targets.remove(t)
 		
 		for t in targets:
 			try:
-				if t.startswith('g_'):
-					map(lambda t: t(), self.groups[t])
-				else:
-					self.tests[t]()
+				self.tests[t]()
 			except (KeyError) as e:
 				print 'brak testu: %s' % (t)
 			except (Exception) as e:
