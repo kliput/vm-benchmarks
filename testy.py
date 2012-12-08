@@ -36,23 +36,23 @@ class Tests(object):
 		}
 		self.groups = {
 			'g_basic': (
-				self.t_mem,
-				self.t_copy,
-				self.t_video,
-				self.t_gcc,
-				self.t_glmark,
-				self.t_threads,
-				self.t_iperf,
+				'mem',
+				'copy',
+				'video',
+				'gcc',
+				'glmark',
+				'threads',
+				'iperf',
 			),
 			'g_disk': (
-				self.t_copy,
-				self.t_grep,
-				self.t_dd_small,
-				self.t_dd_large,
+				'copy',
+				'grep',
+				'dd_small',
+				'dd_large',
 			),
 			'g_net': (
-				self.t_iperf,
-			#	self.t_jumboframes,
+				'iperf',
+			#	'jumboframes',
 			),
 		}
 		
@@ -272,8 +272,10 @@ class Tests(object):
 		
 		for t in targets:
 			if t.startswith('g_') or type(t)==tuple:
-				targets.extend(t)
+				targets.extend(self.groups[t])
 				targets.remove(t)
+		
+		print targets
 		
 		for t in targets:
 			try:
@@ -282,7 +284,6 @@ class Tests(object):
 				print 'brak testu: %s' % (t)
 			except (Exception) as e:
 				print 'problem z testem %s: %s' % (str(t), str(e))
-				#return 2
 		
 	
 	def cleanup(self):
