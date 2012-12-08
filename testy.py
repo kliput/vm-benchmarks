@@ -106,13 +106,15 @@ class Tests(object):
 	disk_filename2 = 'zero2.bin'
 	
 	def disk_zero_file_create(self):
-		subprocess.check_call(['dd', 'if=/dev/zero', 'of=%s' % self.disk_filename1,
-			'bs=%s' % self.disk_block_size, 'count=%d' % self.disk_block_count],
-			stdout=self.null, stderr=self.null)
+		#subprocess.check_call(['dd', 'if=/dev/zero', 'of=%s' % self.disk_filename1,
+			#'bs=%s' % self.disk_block_size, 'count=%d' % self.disk_block_count],
+			#stdout=self.null, stderr=self.null)
+		pass
 	
 	def disk_zero_file_delete(self):
-		os.remove(self.disk_filename1)
-		os.remove(self.disk_filename2)
+		#os.remove(self.disk_filename1)
+		#os.remove(self.disk_filename2)
+		pass
 		
 	def t_copy(self):
 		print 'test kopiowania pliku (s)'
@@ -194,10 +196,10 @@ class Tests(object):
 			subprocess.check_call(['./configure'], stdout=self.null, stderr=self.null)
 			
 			start = time.time()
-			out = subprocess.check_output(['make'], stderr=subprocess.STDOUT)
+			out = subprocess.check_output(['make'], stderr=self.null)
 			end = time.time()
 			
-			if re.search(r'fatal error', out) == None:
+			if re.search(r'fatal error', out) != None:
 				raise Exception('błąd make:\n%s' % (out))
 			
 		except Exception:
