@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-O2 -Wall -Wextra
+CFLAGS=-O0 -Wall -Wextra
 
 all: test_mem test_threads
 

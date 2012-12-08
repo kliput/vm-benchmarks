@@ -22,14 +22,38 @@ class Tests(object):
 		print 'program testowy rozpoczęty'
 		self.null = open('/dev/null', 'w')
 		self.tests = {
-			'calloc':		self.t_calloc,
+			'mem':			self.t_mem,
 			'copy':			self.t_copy,
 			'video':		self.t_video,
 			'gcc':			self.t_gcc,
 			'glmark':		self.t_glmark,
 			'threads':		self.t_threads,
 			'iperf':		self.t_iperf,
-			'jumboframes':  self.t_jumboframes 
+			'jumboframes':  self.t_jumboframes,
+			'grep':			self.t_grep,
+			'dd_small':		self.t_dd_small,
+			'dd_large':		self.t_dd_large,
+		}
+		self.groups = {
+			'g_basic': (
+				self.t_mem,
+				self.t_copy,
+				self.t_video,
+				self.t_gcc,
+				self.t_glmark,
+				self.t_threads,
+				self.t_iperf,
+			),
+			'g_disk': (
+				self.t_copy,
+				self.t_grep,
+				self.t_dd_small,
+				self.t_dd_large,
+			),
+			'g_net': (
+				self.t_iperf,
+				self.t_jumboframes,
+			),
 		}
 		
 	def apt_check_install(self, pkg_name):
@@ -57,16 +81,16 @@ class Tests(object):
 		print self.iperf_mbytes_parse(out)
 
 	
-	def t_calloc(self):
-		print 'test alokacji pamięci (s)'
+	def t_mem(self):
+		print 'test operacji na pamięci (s)'
 		results = []
 		
-		block = 1024*1024*256 # 256MB
-		blocks_count = 100000
+		block = 1024*1024*512 # 512MB
+		blocks_count = 1
 		tests_count = 3
 		
 		for i in range(tests_count):
-			out = subprocess.check_output(['./test_mem', 'calloc_many', str(block), str(blocks_count)])
+			out = subprocess.check_output(['./test_mem', 'malloc_many', str(block), str(blocks_count)])
 			results.append(float(out))
 		
 		#print results
@@ -74,28 +98,59 @@ class Tests(object):
 		# średnia z testów
 		print '%.2f' % (reduce(lambda x, y: x + y, results) / len(results))
 
+		
+	disk_block_size = '1M' #1000*1000
+	disk_block_count = 512
+	
+	disk_filename1 = 'zero.bin'
+	disk_filename2 = 'zero2.bin'
+	
+	def disk_zero_file_create(self):
+		subprocess.check_call(['dd', 'if=/dev/zero', 'of=%s' % self.disk_filename1,
+			'bs=%s' % self.disk_block_size, 'count=%d' % self.disk_block_count],
+			stdout=self.null, stderr=self.null)
+	
+	def disk_zero_file_delete(self):
+		os.remove(self.disk_filename1)
+		os.remove(self.disk_filename2)
+		
 	def t_copy(self):
 		print 'test kopiowania pliku (s)'
 		
-		block_size = 1000*1000
-		block_count = 512
-		
-		filename1 = 'zero.bin'
-		filename2 = 'zero2.bin'
-		
-		subprocess.check_call(['dd', 'if=/dev/zero', 'of=%s' % filename1,
-			'bs=%d' % block_size, 'count=%d' % block_count], stdout=self.null, stderr=self.null)
+		self.disk_zero_file_create()
 		
 		start = time.time()
-		subprocess.check_call(['cp', filename1, filename2], stdout=self.null, stderr=self.null)
+		subprocess.check_call(['cp', self.disk_filename1, self.disk_filename2],
+			stdout=self.null, stderr=self.null)
 		end = time.time()
 		
-		os.remove(filename1)
-		os.remove(filename2)
+		self.disk_zero_file_delete()
 		
-		#print float(out)
 		print '%.2f' % (end-start)
 
+	def dd_test_generic(self, bs):
+		self.disk_zero_file_create()
+		
+		start = time.time()
+		subprocess.check_call(['dd', 'if=%s' % self.disk_filename1, 'of=%s' % self.disk_filename2,
+			'bs=%d' % bs],
+			stdout=self.null, stderr=self.null)
+		end = time.time()
+		
+		self.disk_zero_file_delete()
+		
+		return end-start
+		
+		
+	def t_dd_small(self):
+		print 'test kopiowania małymi blokami - dd (s)'
+		print '%.2f' % self.dd_test_generic(256)
+		
+	def t_dd_large(self):
+		print 'test kopiowania większymi blokami - dd (s)'
+		print '%.2f' % self.dd_test_generic(4096)
+	
+		
 	def t_video(self):
 		print 'test konwersji wideo (s)'
 		
@@ -109,8 +164,6 @@ class Tests(object):
 			print 'brak wejściowego pliku wideo %s, próba pobrania...' % (input_file)
 			subprocess.check_call(['wget', url], stdout=self.null, stderr=self.null)
 			
-			#raise Exception('brak wejściowego pliku wideo: %s', (input_file))
-		
 		start = time.time()
 		subprocess.check_call(['ffmpeg', '-y', '-i', input_file, output_file], stdout=self.null, stderr=self.null)
 		end = time.time()
@@ -177,6 +230,33 @@ class Tests(object):
 		
 		print '%.2f' % (end-start)
 		
+	def t_grep(self):
+		print 'test wyszukiwania w pliku - grep (s)'
+		
+		file_name = 'plik.txt'
+		words = 'lorem ipsum sit dolor amet'
+		count = 8000000
+		
+		f = open(file_name, 'w+')
+		f.write('\n'.join([words]*count))
+		f.close()
+		
+		start = time.time()
+		out = subprocess.check_output(['grep', '-c', words, file_name], stderr=subprocess.STDOUT)
+		end = time.time()
+		
+		try:
+			if int(out) != count:
+				os.remove(file_name)
+				raise Exception('znaleziono nieprawidłową liczba wyrazów: %s zamiast %i' % (out, count))
+		except ValueError:
+			os.remove(file_name)
+			raise Exception('nieprawidłowe wyjście: %s' % (out))
+		
+		print '%.2f' % (end-start)
+		
+		os.remove(file_name)
+	
 	
 	def main(self, targets):
 		try:
@@ -191,7 +271,10 @@ class Tests(object):
 		
 		for t in targets:
 			try:
-				self.tests[t]()
+				if t.startswith('g_'):
+					map(lambda t: t(), self.groups[t])
+				else:
+					self.tests[t]()
 			except (KeyError) as e:
 				print 'brak testu: %s' % (t)
 			except (Exception) as e:
@@ -211,7 +294,7 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Programy do przeprowadzania badań wydajności.')
 	parser.add_argument("--targets", help="testy do przeprowadzenia oddzielone przecinkami (bez spacji!)")
 	
-	parser.add_argument("--ip", help="ip interfejsu sieciowego do testów [domyślnie localhost]")
+	parser.add_argument("--ip", help="ip serwera iperf do testów [domyślnie localhost]")
 	
 	p_args = parser.parse_args()
 	
