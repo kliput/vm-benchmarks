@@ -99,8 +99,8 @@ class Tests(object):
 		print '%.2f' % (reduce(lambda x, y: x + y, results) / len(results))
 
 		
-	disk_block_size = '1M' #1000*1000
-	disk_block_count = 512
+	disk_block_size = '512MB'
+	disk_block_count = 1
 	
 	disk_filename1 = 'zero.bin'
 	disk_filename2 = 'zero2.bin'
